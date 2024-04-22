@@ -68,7 +68,8 @@ jobs:
       run: |
         testcase ./test/
     -
-      name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
       with:
-        flags: unittests
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: mah0x211/lua-oauth2c
