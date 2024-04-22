@@ -1,0 +1,13 @@
+codefromstrings = false
+runreport = true
+deletestats = true
+modules = {
+    ["oauth2c"] = "oauth2c.lua",
+    ["oauth2c.request"] = "lib/request.lua",
+    ["oauth2c.authorization"] = "lib/authorization.lua",
+    ["oauth2c.authorization.request"] = "lib/authorization/request.lua",
+    ["oauth2c.access_token"] = "lib/access_token.lua",
+    ["oauth2c.access_token.request"] = "lib/access_token/request.lua",
+    ["oauth2c.refresh_token"] = "lib/refresh_token.lua",
+    ["oauth2c.refresh_token.request"] = "lib/refresh_token/request.lua",
+}
