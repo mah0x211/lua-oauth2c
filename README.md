@@ -44,7 +44,7 @@ local o = oauth2c.new({
 ```
 
 
-## oauth2c:set_tokens( tokens )
+## ok, err = oauth2c:set_tokens( tokens )
 
 set the access token and related information to the oauth2c object.
 
@@ -56,6 +56,11 @@ set the access token and related information to the oauth2c object.
     - `expires_in:integer`: the lifetime in seconds of the access token. (optional)
     - `refresh_token:string`: refresh token. (optional)
     - `scope:string`: the scope of the access token. (optional)
+
+**Returns**
+
+- `ok:boolean`: `true` if successful, otherwise `false`.
+- `err:any`: an error message.
 
 **NOTE**
 

@@ -181,6 +181,8 @@ local TOKEN_OPTIONS = {
 
 --- set_tokens
 --- @param tokens oauth2c.tokens
+--- @return boolean ok
+--- @return any err
 function OAuth2:set_tokens(tokens)
     assert(is.table(tokens), 'tokens must be table')
 
@@ -190,14 +192,15 @@ function OAuth2:set_tokens(tokens)
         if v ~= nil then
             if not is[def.type](v) then
                 -- invalid data type
-                fatalf(2, def.errmsg)
+                return false, errorf(def.errmsg)
             end
             tbl[k] = v
         elseif def.req then
-            fatalf(2, '%s is required', k)
+            return false, errorf('%s is required', k)
         end
     end
     self.tokens = tbl
+    return true
 end
 
 --- get_tokens
@@ -270,13 +273,11 @@ function OAuth2:verify_access_token_response(response)
         return nil, err
     elseif not res.error then
         -- update tokens
-        self.tokens = {
-            access_token = res.access_token,
-            token_type = res.token_type,
-            expires_in = res.expires_in,
-            refresh_token = res.refresh_token,
-            scope = res.scope,
-        }
+        local ok
+        ok, err = self:set_tokens(res)
+        if not ok then
+            return nil, err
+        end
     end
     return res
 end
