@@ -173,8 +173,8 @@ function testcase.create_authorization_header()
         redirect_uri = 'http://example.com/authz/',
     })
 
-    -- test that return empty string if no access token set yet
-    assert.equal(o:create_authorization_header(), '')
+    -- test that return nil string if no access token set yet
+    assert.is_nil(o:create_authorization_header())
 
     -- test that create authorization header
     o:set_tokens({

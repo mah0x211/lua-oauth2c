@@ -217,10 +217,12 @@ function OAuth2:get_tokens()
 end
 
 --- create_authorization_header
---- @return string
+--- @return string?
 function OAuth2:create_authorization_header()
     local tokens = self.tokens
-    return tokens and (tokens.token_type .. ' ' .. tokens.access_token) or ''
+    if tokens and tokens.token_type and tokens.access_token then
+        return tokens.token_type .. ' ' .. tokens.access_token
+    end
 end
 
 --- authorization_request
