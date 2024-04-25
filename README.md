@@ -88,7 +88,7 @@ create an value of authorization header that contains the access token.
 
 **Returns**
 
-- `header:string`: a value of the authorization header.
+- `header:string?`: a value of the authorization header, or `nil` if both the access token and the token type are not set.
 
 **Usage**
 
