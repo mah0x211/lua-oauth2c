@@ -100,14 +100,15 @@ local new_request = require('oauth2c.request')
 --- create_request
 --- @param uri string @ token endpoint URI
 --- @param code string @ The authorization code received from the authorization server.
---- @param redirect_uri string @ REQUIRED, if the "redirect_uri" parameter was included in the authorization request as described in Section 4.1.1, and their values MUST be identical.
+--- @param redirect_uri string? @ OPTIONAL, if the "redirect_uri" parameter was included in the authorization request as described in Section 4.1.1, and their values MUST be identical.
 --- @param client_id string @ REQUIRED, if the client is not authenticating with the authorization server as described in Section 3.2.1.
 --- @param client_secret string @ REQUIRED, if the client is not authenticating with the authorization server as described in Section 3.2.1.
 --- @return oauth2c.access_token.request req
 local function create_request(uri, code, redirect_uri, client_id, client_secret)
     assert(is_str(uri), 'uri must be string')
     assert(is_str(code), 'code must be string')
-    assert(is_str(redirect_uri), 'redirect_uri must be string')
+    assert(redirect_uri == nil or is_str(redirect_uri),
+           'redirect_uri must be string')
     assert(is_str(client_id), 'client_id must be string')
     assert(is_str(client_secret), 'client_secret must be string')
 

@@ -198,6 +198,25 @@ function testcase.create_authorization_request()
         },
     })
 
+    -- test that create authorization request without redirect_uri
+    o = oauth2c({
+        client_id = 'my_client_id',
+        client_secret = 'my_client_secret',
+        authz_uri = 'https://example.com/oauth2/authorize',
+        token_uri = 'https://example.com/oauth2/token',
+    })
+    req = o:create_authorization_request()
+    assert.re_match(req, '^oauth2c.request: ')
+    assert.contains(req, {
+        uri = 'https://example.com/oauth2/authorize',
+        state = req.state,
+        params = {
+            client_id = 'my_client_id',
+            response_type = 'code',
+            state = req.state,
+        },
+    })
+
     -- test that create authorization request with scope
     req = o:create_authorization_request('read write')
     assert.contains(req, {
@@ -206,7 +225,6 @@ function testcase.create_authorization_request()
         params = {
             client_id = 'my_client_id',
             response_type = 'code',
-            redirect_uri = 'http://example.com/authz/',
             state = req.state,
             scope = 'read write',
         },
