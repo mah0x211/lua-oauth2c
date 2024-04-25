@@ -59,13 +59,15 @@ function testcase.set_tokens_get_tokens()
     })
 
     -- test that set tokens
-    o:set_tokens({
+    local ok, err = o:set_tokens({
         access_token = '1234',
         token_type = 'bearer',
         expires_in = 3600,
         refresh_token = '5678',
         scope = 'read write',
     })
+    assert.is_nil(err)
+    assert.is_true(ok)
 
     -- test that get tokens
     assert.equal(o:get_tokens(), {
@@ -76,8 +78,8 @@ function testcase.set_tokens_get_tokens()
         scope = 'read write',
     })
 
-    -- test that throws an error if access_token is missing
-    local err = assert.throws(o.set_tokens, o, {
+    -- test that returns an error if access_token is missing
+    ok, err = o:set_tokens({
         -- access_token = '1234',
         token_type = 'bearer',
         expires_in = 3600,
@@ -85,9 +87,10 @@ function testcase.set_tokens_get_tokens()
         scope = 'read write',
     })
     assert.match(err, 'access_token is required')
+    assert.is_false(ok)
 
-    -- test that throws an error if access_token is not a string
-    err = assert.throws(o.set_tokens, o, {
+    -- test that returns an error if access_token is not a string
+    ok, err = o:set_tokens({
         access_token = {
             '1234',
         },
@@ -97,9 +100,10 @@ function testcase.set_tokens_get_tokens()
         scope = 'read write',
     })
     assert.match(err, 'access_token must be string')
+    assert.is_false(ok)
 
-    -- test that throws an error if token_type is missing
-    err = assert.throws(o.set_tokens, o, {
+    -- test that returns an error if token_type is missing
+    ok, err = o:set_tokens({
         access_token = '1234',
         -- token_type = 'bearer',
         expires_in = 3600,
@@ -107,9 +111,10 @@ function testcase.set_tokens_get_tokens()
         scope = 'read write',
     })
     assert.match(err, 'token_type is required')
+    assert.is_false(ok)
 
-    -- test that throws an error if token_type is not a string
-    err = assert.throws(o.set_tokens, o, {
+    -- test that returns an error if token_type is not a string
+    ok, err = o:set_tokens({
         access_token = '1234',
         token_type = {
             'bearer',
@@ -119,9 +124,10 @@ function testcase.set_tokens_get_tokens()
         scope = 'read write',
     })
     assert.match(err, 'token_type must be string')
+    assert.is_false(ok)
 
-    -- test that throws an error if expires_in is not uint
-    err = assert.throws(o.set_tokens, o, {
+    -- test that returns an error if expires_in is not uint
+    ok, err = o:set_tokens({
         access_token = '1234',
         token_type = 'bearer',
         expires_in = 3.600,
@@ -129,9 +135,10 @@ function testcase.set_tokens_get_tokens()
         scope = 'read write',
     })
     assert.match(err, 'expires_in must be unsigned integer')
+    assert.is_false(ok)
 
-    -- test that throws an error if refresh_token is not a string
-    err = assert.throws(o.set_tokens, o, {
+    -- test that returns an error if refresh_token is not a string
+    ok, err = o:set_tokens({
         access_token = '1234',
         token_type = 'bearer',
         expires_in = 3600,
@@ -141,9 +148,10 @@ function testcase.set_tokens_get_tokens()
         scope = 'read write',
     })
     assert.match(err, 'refresh_token must be string')
+    assert.is_false(ok)
 
-    -- test that throws an error if scope is not a string
-    err = assert.throws(o.set_tokens, o, {
+    -- test that returns an error if scope is not a string
+    ok, err = o:set_tokens({
         access_token = '1234',
         token_type = 'bearer',
         expires_in = 3600,
@@ -153,6 +161,7 @@ function testcase.set_tokens_get_tokens()
         },
     })
     assert.match(err, 'scope must be string')
+    assert.is_false(ok)
 end
 
 function testcase.create_authorization_header()
