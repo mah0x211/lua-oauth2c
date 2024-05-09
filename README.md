@@ -97,19 +97,19 @@ print(o:create_authorization_header()) -- "Bearer xxxxxxxx"
 ```
 
 
-## req = oauth2c:create_authorization_request( [scope] )
+## req = oauth2c:create_authorization_request( [scope [, state]] )
 
 create an authorization request object.
 
 **Parameters**
 
 - `scope:string`: the scope of the access request.
+- `state:string`: a random string that used to protect against cross-site request forgery.
 
 **Returns**
 
 - `req:oauth2c.request`: a [request object](#oauth2crequest) that contains the following fields:
     - `uri:string`: the authorization uri.
-    - `state:string`: a random string.
     - `params:table`: a table that contains the following fields:
         - `response_type:string`: the response type. (it is always `code`)
         - `client_id:string`: client id.
@@ -121,7 +121,7 @@ create an authorization request object.
 
 ```lua
 local dump = require('dump')
-local req = o:create_authorization_request('read write')
+local req = o:create_authorization_request('read write', '1ME5p04YcJOVM6hO')
 print('Authorization Request:', dump(req))
 -- Authorization Request: {
 --     _NAME = "oauth2c.request",
@@ -134,13 +134,12 @@ print('Authorization Request:', dump(req))
 --         scope = "read write",
 --         state = "1ME5p04YcJOVM6hO"
 --     },
---     state = "1ME5p04YcJOVM6hO",
 --     uri = "https://example.com/authorize"
 -- }
 ```
 
 
-## res, err = oauth2c:verify_authorization_response_query( state, query )
+## res, err = oauth2c:verify_authorization_response_query( query [, state] )
 
 verify the authorization response.  
 please refer to the following document for the authorization response.
@@ -149,10 +148,10 @@ please refer to the following document for the authorization response.
 
 **Parameters**
 
-- `state:string`: a random string that same as the `state` field of the request object that created by the `oauth2c:create_authorization_request()` method.
 - `query:string|table`: a query string or a table that contains the following fields:
     - `code:string`: the authorization code.
     - `state:string`: a random string that compared with the specified `state` argument.
+- `state:string`: a random string that same as the `state` field of the request object that created by the `oauth2c:create_authorization_request()` method.
 
 **Returns**
 
@@ -166,7 +165,7 @@ if the `error` field is not found in the response, update the `code` field of oa
 
 ```lua
 local dump = require('dump')
-local res, err = o:verify_authorization_response_query(state, resp.query)
+local res, err = o:verify_authorization_response_query(resp.query, state)
 if not res then
     print('Authorization Response Verification Failed:', err)
     return
@@ -276,6 +275,7 @@ the object has the following fields.
 
 And the following methods are available.
 
+
 ## uri = request:encode_uri()
 
 encode the request object to the uri string.
@@ -287,7 +287,7 @@ encode the request object to the uri string.
 **Usage**
 
 ```lua
-local req = o:create_authorization_request('read write')
+local req = o:create_authorization_request('read write', '1ME5p04YcJOVM6hO')
 print(req:encode_uri())
 -- "https://example.com/authorize?client_id=your-client-id&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&response_type=code&scope=read+write&state=1ME5p04YcJOVM6hO"
 ```
@@ -304,7 +304,7 @@ encode the `params` field of the request object to the string in `application/x-
 **Usage**
 
 ```lua
-local req = o:create_authorization_request('read write')
+local req = o:create_authorization_request('read write', '1ME5p04YcJOVM6hO')
 print(req:encode_params())
 -- "client_id=your-client-id&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&response_type=code&scope=read+write&state=1ME5p04YcJOVM6hO"
 ```
