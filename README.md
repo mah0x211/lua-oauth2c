@@ -115,7 +115,7 @@ create an authorization request object.
         - `client_id:string`: client id.
         - `redirect_uri:string`: redirect uri.
         - `scope:string`: the scope of the access request that specified by the `scope` argument.
-        - `state:string`: a random string that same as the `state` field of the parent object.
+        - `state:string`: a random string that same as the `state` argument.
 
 **Usage**
 
@@ -151,7 +151,7 @@ please refer to the following document for the authorization response.
 - `query:string|table`: a query string or a table that contains the following fields:
     - `code:string`: the authorization code.
     - `state:string`: a random string that compared with the specified `state` argument.
-- `state:string`: a random string that same as the `state` field of the request object that created by the `oauth2c:create_authorization_request()` method.
+- `state:string`: a state string that specified by the `state` argument of the `oauth2c:create_authorization_request()` method.
 
 **Returns**
 
