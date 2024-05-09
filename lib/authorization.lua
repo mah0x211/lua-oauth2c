@@ -86,7 +86,8 @@ local new_request = require('oauth2c.request')
 --- @field state string @ RECOMMENDED. An opaque value used by the client to maintain state between the request and callback.
 
 --- @class oauth2c.authorization.request : oauth2c.request
---- @field state string @ state parameter
+--- @field uri string @ authorization endpoint URI
+--- @field params oauth2c.authorization.request.params
 
 --- create_request
 --- @param uri string @ authorization endpoint URI
