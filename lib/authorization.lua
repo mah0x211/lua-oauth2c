@@ -21,7 +21,6 @@
 --
 local find = string.find
 local pairs = pairs
-local random = require('string.random')
 local is_str = require('lauxhlib.is').str
 local is_table = require('lauxhlib.is').table
 local parse_uri = require('url').parse
@@ -94,24 +93,23 @@ local new_request = require('oauth2c.request')
 --- @param client_id string @ The client identifier as described in Section 2.2
 --- @param redirect_uri string? @ OPTIONAL. As described in Section 3.1.2.
 --- @param scope? string @ OPTIONAL. The scope of the access request as described by Section 3.3.
+--- @param state? string @ RECOMMENDED. An opaque value used by the client to maintain state between the request and callback.
 --- @return oauth2c.authorization.request req
-local function create_request(uri, client_id, redirect_uri, scope)
+local function create_request(uri, client_id, redirect_uri, scope, state)
     assert(is_str(uri), 'uri must be string')
     assert(is_str(client_id), 'client_id must be string')
     assert(redirect_uri == nil or is_str(redirect_uri),
            'redirect_uri must be string or nil')
     assert(scope == nil or is_str(scope), 'scope must be string or nil')
+    assert(state == nil or is_str(state), 'state must be string or nil')
 
-    local state = random(16, 'urlsafe')
-    local req = new_request(uri, {
+    return new_request(uri, {
         response_type = 'code',
         client_id = client_id,
         redirect_uri = redirect_uri,
         scope = scope,
         state = state,
     })
-    req.state = state
-    return req
 end
 
 --
@@ -159,12 +157,12 @@ end
 --- @field state string @ REQUIRED if the "state" parameter was present in the client authorization request. The exact value received from the client.
 
 --- verify_response
---- @param state string
 --- @param query table|string
+--- @param state? string
 --- @return oauth2c.authorization.response|oauth2c.error_response? res
 --- @return any err
-local function verify_response(state, query)
-    assert(is_str(state), 'state must be string')
+local function verify_response(query, state)
+    assert(state == nil or is_str(state), 'state must be string or nil')
 
     local res
     if not is_str(query) then
@@ -187,18 +185,16 @@ local function verify_response(state, query)
 
     if res.error then
         return res
-    elseif res.state == nil then
-        return nil, errorf('no state parameter in query')
-    elseif not is_str(res.state) then
-        return nil, errorf('state parameter in query is not string')
-    elseif res.state ~= state then
-        return nil, errorf('state mismatch')
     elseif res.code == nil then
         return nil, errorf('no code parameter in query')
     elseif not is_str(res.code) then
         return nil, errorf('code parameter in query is not string')
     elseif find(res.code, '^%s*$') then
         return nil, errorf('code parameter in query is empty string')
+    elseif res.state ~= nil and not is_str(res.state) then
+        return nil, errorf('state parameter in query is not string')
+    elseif res.state ~= state then
+        return nil, errorf('state mismatch')
     end
     return res
 end

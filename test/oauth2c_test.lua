@@ -198,12 +198,10 @@ function testcase.create_authorization_request()
     assert.re_match(req, '^oauth2c.request: ')
     assert.contains(req, {
         uri = 'https://example.com/oauth2/authorize',
-        state = req.state,
         params = {
             client_id = 'my_client_id',
             response_type = 'code',
             redirect_uri = 'http://example.com/authz/',
-            state = req.state,
         },
     })
 
@@ -218,11 +216,9 @@ function testcase.create_authorization_request()
     assert.re_match(req, '^oauth2c.request: ')
     assert.contains(req, {
         uri = 'https://example.com/oauth2/authorize',
-        state = req.state,
         params = {
             client_id = 'my_client_id',
             response_type = 'code',
-            state = req.state,
         },
     })
 
@@ -230,18 +226,31 @@ function testcase.create_authorization_request()
     req = o:create_authorization_request('read write')
     assert.contains(req, {
         uri = 'https://example.com/oauth2/authorize',
-        state = req.state,
         params = {
             client_id = 'my_client_id',
             response_type = 'code',
-            state = req.state,
             scope = 'read write',
+        },
+    })
+
+    -- test that create authorization request with state
+    req = o:create_authorization_request(nil, 'foobar')
+    assert.contains(req, {
+        uri = 'https://example.com/oauth2/authorize',
+        params = {
+            client_id = 'my_client_id',
+            response_type = 'code',
+            state = 'foobar',
         },
     })
 
     -- test that throws an error if scope is not a string
     local err = assert.throws(o.create_authorization_request, o, true)
     assert.match(err, 'scope must be string or nil')
+
+    -- test that throws an error if state is not a string
+    err = assert.throws(o.create_authorization_request, o, nil, true)
+    assert.match(err, 'state must be string or nil')
 end
 
 function testcase.verify_authorization_response_query()
@@ -252,47 +261,43 @@ function testcase.verify_authorization_response_query()
         token_uri = 'https://example.com/oauth2/token',
         redirect_uri = 'http://example.com/authz/',
     })
-    local req = o:create_authorization_request()
 
     -- test that verify authorization response query table
-    local res, err = o:verify_authorization_response_query(req.state, {
+    local res, err = o:verify_authorization_response_query({
         code = '1234',
-        state = req.state,
-    })
+        state = 'foobar',
+    }, 'foobar')
     assert.is_nil(err)
     assert.equal(res, {
         code = '1234',
-        state = req.state,
+        state = 'foobar',
     })
 
     -- test that verify authorization response query string
-    res, err = o:verify_authorization_response_query(req.state,
-                                                     '/authz/?code=1234&state=' ..
-                                                         req.state)
+    res, err = o:verify_authorization_response_query(
+                   '/authz/?code=1234&state=foobar', 'foobar')
     assert.is_nil(err)
     assert.equal(res, {
         code = '1234',
-        state = req.state,
+        state = 'foobar',
     })
 
     -- test that throws an error if state is not string
-    err = assert.throws(o.verify_authorization_response_query, o, true,
-                        '/authz/?code=1234')
+    err = assert.throws(o.verify_authorization_response_query, o,
+                        '/authz/?code=1234', true)
     assert.match(err, 'state must be string')
 
     -- test that throws an error if query is not a string or table
-    err = assert.throws(o.verify_authorization_response_query, o, req.state,
-                        true)
+    err = assert.throws(o.verify_authorization_response_query, o, true)
     assert.match(err, 'query must be table or string')
 
     -- test that return error if query string cannot be parsed
-    res, err = o:verify_authorization_response_query(req.state,
-                                                     '/authz/ ?code=1234')
+    res, err = o:verify_authorization_response_query('/authz/ ?code=1234')
     assert.is_nil(res)
     assert.match(err, 'illegal character sequence')
 
     -- test that return error if error parameter is present
-    res, err = o:verify_authorization_response_query(req.state, {
+    res, err = o:verify_authorization_response_query({
         error = 'invalid_request',
     })
     assert.is_nil(err)
@@ -300,51 +305,40 @@ function testcase.verify_authorization_response_query()
         error = 'invalid_request',
     })
 
-    -- test that return error if no state parameter in query
-    res, err = o:verify_authorization_response_query(req.state, {
-        code = '1234',
-    })
-    assert.is_nil(res)
-    assert.match(err, 'no state parameter in query')
-
-    -- test that return error if state parameter in query is not string
-    res, err = o:verify_authorization_response_query(req.state, {
-        code = '1234',
-        state = 1234,
-    })
-    assert.is_nil(res)
-    assert.match(err, 'state parameter in query is not string')
-
-    -- test that return error if state parameters is not equal to state
-    res, err = o:verify_authorization_response_query(req.state, {
-        code = '1234',
-        state = '5678',
-    })
-    assert.is_nil(res)
-    assert.match(err, 'state mismatch')
-
     -- test that return error if no code parameter in query
-    res, err = o:verify_authorization_response_query(req.state, {
-        state = req.state,
-    })
+    res, err = o:verify_authorization_response_query({})
     assert.is_nil(res)
     assert.match(err, 'no code parameter in query')
 
     -- test that return error if code parameter in query is not string
-    res, err = o:verify_authorization_response_query(req.state, {
+    res, err = o:verify_authorization_response_query({
         code = 1234,
-        state = req.state,
     })
     assert.is_nil(res)
     assert.match(err, 'code parameter in query is not string')
 
     -- test that return error if code parameter in query is empty string
-    res, err = o:verify_authorization_response_query(req.state, {
+    res, err = o:verify_authorization_response_query({
         code = '',
-        state = req.state,
     })
     assert.is_nil(res)
     assert.match(err, 'code parameter in query is empty string')
+
+    -- test that return error if state parameter in query is not string
+    res, err = o:verify_authorization_response_query({
+        code = '1234',
+        state = 1234,
+    }, 'foobar')
+    assert.is_nil(res)
+    assert.match(err, 'state parameter in query is not string')
+
+    -- test that return error if state parameters is not equal to state
+    res, err = o:verify_authorization_response_query({
+        code = '1234',
+        state = '5678',
+    }, 'foobar')
+    assert.is_nil(res)
+    assert.match(err, 'state mismatch')
 end
 
 function testcase.create_access_token_request()
@@ -362,10 +356,10 @@ function testcase.create_access_token_request()
     assert.is_nil(req)
 
     -- test that create access token request after verify authorization response
-    assert(o:verify_authorization_response_query('foobar', {
+    assert(o:verify_authorization_response_query({
         code = '1234',
         state = 'foobar',
-    }))
+    }, 'foobar'))
     req, err = o:create_access_token_request()
     assert.is_nil(err)
     assert.re_match(req, '^oauth2c.request: ')

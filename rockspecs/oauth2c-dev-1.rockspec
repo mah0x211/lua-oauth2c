@@ -15,7 +15,6 @@ dependencies = {
     "form-urlencoded >= 0.2.0",
     "lauxhlib >= 0.6.0",
     "metamodule >= 0.5.0",
-    "string-random >= 0.1.0",
     "url >= 2.1.0",
     "yyjson >= 0.8.0",
 }

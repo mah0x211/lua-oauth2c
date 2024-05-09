@@ -227,20 +227,21 @@ end
 
 --- authorization_request
 --- @param scope? string
+--- @param state? string
 --- @return oauth2c.authorization.request req
-function OAuth2:create_authorization_request(scope)
+function OAuth2:create_authorization_request(scope, state)
     return create_authorization_request(self.params.authz_uri,
                                         self.params.client_id,
-                                        self.params.redirect_uri, scope)
+                                        self.params.redirect_uri, scope, state)
 end
 
 --- verify_authorization_response_query
---- @param state string
 --- @param query table|string
+--- @param state? string
 --- @return oauth2c.authorization.response|oauth2c.error_response? res
 --- @return any err
-function OAuth2:verify_authorization_response_query(state, query)
-    local res, err = verify_authorization_response(state, query)
+function OAuth2:verify_authorization_response_query(query, state)
+    local res, err = verify_authorization_response(query, state)
     if not res then
         return nil, err
     elseif not res.error then
